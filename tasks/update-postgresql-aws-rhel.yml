@@ -1,0 +1,22 @@
+- name: Copy postgresql module zip folder to eap's module directory 
+  copy: src=org.zip  dest=~/jboss-eap-6.4/modules/org.zip owner=ec2-user group=ec2-user
+
+- name: Extract org.zip in the modules directory
+  unarchive: src=~/jboss-eap-6.4/modules/org.zip dest=~/jboss-eap-6.4/modules/ copy=no creates=~/org owner=ec2-user group=ec2-user
+
+- name: Update standalone.xml to point to newly postgresql datasource AND open ports
+  copy: src={{ item }} dest=~/jboss-eap-6.4/standalone/configuration/{{ item }} owner=ec2-user group=ec2-user
+  with_items:
+  - "standalone.xml"
+
+- name: Update businesscentral.war's persistence.xml to point to newly defined postgresql datasource
+  copy: src={{ item }} dest=~/jboss-eap-6.4/standalone/deployments/business-central.war/WEB-INF/classes/META-INF/{{ item }} owner=ec2-user group=ec2-user
+  with_items:
+  - "persistence.xml"
+
+- name: Update jboss-web.xml to point to newly defined postgresql datasource
+  copy: src={{ item }} dest=~/jboss-eap-6.4/standalone/deployments/dashbuilder.war/WEB-INF/{{ item }} owner=ec2-user group=ec2-user
+  with_items:
+  - "jboss-web.xml"
+
+

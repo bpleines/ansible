@@ -1,0 +1,28 @@
+- name: Install Git
+  sudo: true
+  yum: name=git state=latest
+
+- name: Install zip
+  sudo: true
+  yum: name=zip state=latest
+
+- name: Install unzip
+  sudo: true
+  yum: name=unzip state=latest
+
+- name: Install vim
+  sudo: true
+  yum: name=vim state=latest
+
+- name: Copy jdk-7u79-linux-x64.rpm
+  sudo: true
+  copy: src=jdk-7u79-linux-x64.rpm dest=~/jdk-7u79-linux-x64.rpm owner=ec2-user group=ec2-user
+
+- name: Install jdk-7u79-linux-x64.rpm
+  sudo: true
+  shell: rpm -ivh jdk-7u79-linux-x64.rpm & chdir=/home/ec2-user/
+ 
+#- name: Install Maven
+#  sudo: true
+#  yum: name=maven state=latest
+

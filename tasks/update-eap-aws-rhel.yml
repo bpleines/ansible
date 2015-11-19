@@ -1,0 +1,14 @@
+- name: Copy EAP 6.4.4 with BPM 6.1.4 (patches applied) 
+  copy: src=jboss-eap-6.4.4-bpm-6.1.4.zip  dest=~/jboss-eap-6.4.4-bpm-6.1.4.zip owner=ec2-user group=ec2-user
+
+- name: Extract EAP
+  unarchive: src=~/jboss-eap-6.4.4-bpm-6.1.4.zip dest=~ copy=no creates=~/jboss-eap-6.4 owner=ec2-user group=ec2-user
+
+- name: Copy EAP Standalone User Configuration
+  copy: src={{ item }} dest=~/jboss-eap-6.4/standalone/configuration/{{ item }} owner=ec2-user group=ec2-user
+  with_items:
+  - "application-roles.properties"
+  - "application-users.properties"
+  - "mgmt-groups.properties"
+  - "mgmt-users.properties"
+

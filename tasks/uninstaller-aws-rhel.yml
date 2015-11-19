@@ -1,0 +1,5 @@
+---
+- hosts: awsrhel
+  tasks:
+   - include: strip-aws-rhel.yml
+

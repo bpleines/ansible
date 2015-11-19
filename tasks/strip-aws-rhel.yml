@@ -1,0 +1,28 @@
+- name: Uninstall git
+  sudo: true
+  yum: name=git state=absent
+
+- name: Uninstall zip
+  sudo: true
+  yum: name=zip state=absent
+
+- name: Uninstall unzip
+  sudo: true
+  yum: name=unzip state=absent
+
+- name: Uninstall vim
+  sudo: true
+  yum: name=vim state=absent
+
+- name: Delete jdk-7u79-linux-x64.rpm
+  sudo: true
+  shell: rm jdk-7u79-linux-x64.rpm & chdir=/home/ec2-user
+
+- name: Uninstall jdk-7u79-linux-x64.rpm
+  sudo: true
+  shell: rpm -ev jdk-7u79-linux-x64.rpm & chdir=/home/ec2-user/
+
+#- name: Uninstall Maven
+#  sudo: true
+#  yum: name=maven state=absent
+

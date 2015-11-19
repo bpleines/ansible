@@ -1,0 +1,7 @@
+---
+- hosts: awsrhel
+  tasks: 
+   - include: update-aws-rhel.yml
+   - include: update-eap-aws-rhel.yml
+   - include: update-postgresql-aws-rhel.yml
+   - include: start-eap.yml
