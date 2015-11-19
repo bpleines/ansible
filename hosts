@@ -10,4 +10,4 @@
 
 # Ex 1: Ungrouped hosts, specify before any group headers.
 [awsrhel]
-54.86.189.160
+<Put AWS RHEL VM Public IP address here>
