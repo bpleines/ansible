@@ -52,8 +52,20 @@ Try {
                 If (!$inheritedRule.IsInherited) {
                     Continue
                 }
-
+                # Check to see if path is a registry hive - if so use RegistryRights AccessControl Object
+                If ($path.StartsWith("H") -and -not($path.StartsWith("H:"))) {
                 ForEach($explicitRrule in $objACL.Access) {
+                    If ($explicitRrule.IsInherited) {
+                        Continue
+                    }
+
+                    If (($inheritedRule.RegistryRights -eq $explicitRrule.RegistryRights) -And ($inheritedRule.AccessControlType -eq $explicitRrule.AccessControlType) -And ($inheritedRule.IdentityReference -eq $explicitRrule.IdentityReference) -And ($inheritedRule.InheritanceFlags -eq $explicitRrule.InheritanceFlags) -And ($inheritedRule.PropagationFlags -eq $explicitRrule.PropagationFlags)) {
+                        $objACL.RemoveAccessRule($explicitRrule)
+                    }
+                }
+                }
+                Else {
+                  ForEach($explicitRrule in $objACL.Access) {
                     If ($explicitRrule.IsInherited) {
                         Continue
                     }
@@ -61,6 +73,7 @@ Try {
                     If (($inheritedRule.FileSystemRights -eq $explicitRrule.FileSystemRights) -And ($inheritedRule.AccessControlType -eq $explicitRrule.AccessControlType) -And ($inheritedRule.IdentityReference -eq $explicitRrule.IdentityReference) -And ($inheritedRule.InheritanceFlags -eq $explicitRrule.InheritanceFlags) -And ($inheritedRule.PropagationFlags -eq $explicitRrule.PropagationFlags)) {
                         $objACL.RemoveAccessRule($explicitRrule)
                     }
+                }
                 }
             }
         }

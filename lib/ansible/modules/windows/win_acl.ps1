@@ -114,7 +114,7 @@ $params = Parse-Args $args;
 $result = New-Object PSObject;
 Set-Attr $result "changed" $false;
 
-$path = Get-Attr $params "path" -failifempty $true
+$path = Get-Attr $params "path" -failifempty $true 
 $user = Get-Attr $params "user" -failifempty $true
 $rights = Get-Attr $params "rights" -failifempty $true
 
@@ -143,7 +143,13 @@ ElseIf ($inherit -eq "") {
 }
  
 Try {
+    #Check to see if the path is a registry hive - if so use RegistryRights AccessControl Object
+    If ($path.StartsWith("H") -and -not($path.StartsWith("H:"))) {
+    $colRights = [System.Security.AccessControl.RegistryRights]$rights
+    }
+    Else {
     $colRights = [System.Security.AccessControl.FileSystemRights]$rights
+    }
     $InheritanceFlag = [System.Security.AccessControl.InheritanceFlags]$inherit
     $PropagationFlag = [System.Security.AccessControl.PropagationFlags]$propagation
  
@@ -155,20 +161,40 @@ Try {
     }
  
     $objUser = New-Object System.Security.Principal.SecurityIdentifier($sid)
+    
+    #Check to see if the path is a registry hive - if so use RegistryRights AccessControl Object
+    If ($path.StartsWith("H") -and -not($path.StartsWith("H:"))) {
+    $objACE = New-Object System.Security.AccessControl.RegistryAccessRule ($objUser, $colRights, $InheritanceFlag, $PropagationFlag, $objType)
+    }
+    Else {
     $objACE = New-Object System.Security.AccessControl.FileSystemAccessRule ($objUser, $colRights, $InheritanceFlag, $PropagationFlag, $objType)
+    }
+
     $objACL = Get-ACL $path
  
     # Check if the ACE exists already in the objects ACL list
     $match = $false
-    ForEach($rule in $objACL.Access){
+
+    # Check to see if the path is a registry hive - if so use RegistryRights AccessControl Object
+    If ($path.StartsWith("H") -and -not($path.StartsWith("H:"))) {
+      ForEach($rule in $objACL.Access){
         $ruleIdentity = $rule.IdentityReference.Translate([System.Security.Principal.SecurityIdentifier])
-        If (($rule.FileSystemRights -eq $objACE.FileSystemRights) -And ($rule.AccessControlType -eq $objACE.AccessControlType) -And ($ruleIdentity -eq $objACE.IdentityReference) -And ($rule.IsInherited -eq $objACE.IsInherited) -And ($rule.InheritanceFlags -eq $objACE.InheritanceFlags) -And ($rule.PropagationFlags -eq $objACE.PropagationFlags)) { 
+        If (($rule.RegistryRights -eq $objACE.RegistryRights) -And ($rule.AccessControlType -eq $objACE.AccessControlType) -And ($ruleIdentity -eq $objACE.IdentityReference) -And ($rule.IsInherited -eq $objACE.IsInherited) -And ($rule.InheritanceFlags -eq $objACE.InheritanceFlags) -And ($rule.PropagationFlags -eq $objACE.PropagationFlags)) {
             $match = $true
             Break
-        } 
+        }
+      }
     }
-
-    If ($state -eq "present" -And $match -eq $false) {
+    Else {
+      ForEach($rule in $objACL.Access){
+        $ruleIdentity = $rule.IdentityReference.Translate([System.Security.Principal.SecurityIdentifier])
+        If (($rule.FileSystemRights -eq $objACE.FileSystemRights) -And ($rule.AccessControlType -eq $objACE.AccessControlType) -And ($ruleIdentity -eq $objACE.IdentityReference) -And ($rule.IsInherited -eq $objACE.IsInherited) -And ($rule.InheritanceFlags -eq $objACE.InheritanceFlags) -And ($rule.PropagationFlags -eq $objACE.PropagationFlags)) {
+            $match = $true
+            Break
+        }
+      }
+    }
+   If ($state -eq "present" -And $match -eq $false) {
         Try {
             $objACL.AddAccessRule($objACE)
             Set-ACL $path $objACL
